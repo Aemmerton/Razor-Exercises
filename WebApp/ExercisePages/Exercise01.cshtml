@@ -11,19 +11,12 @@
     <h1>@Page.Title</h1>
 }
 
-<!-- determine if the page is a postback or not-->
+
 @if (IsPost)
 {
-    //this true path is done IF this page is returning
-    //from the previous sending
-
-    //IF you have multiple buttons on your form, you SHOULD
-    //determine which button was pressed; thus; dictating WHICH
-    //logic is to be EXECUTED
     choices = Request.Form["MealItems"];
     if (theButton.Equals("submit"))
     {
-        //the Press Me button was pressed
         if (string.IsNullOrEmpty(myname))
         {
             <p style="color:firebrick">You don't have a name?</p>
