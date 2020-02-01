@@ -1,8 +1,91 @@
 ﻿@{
     Layout = "~/_Layout.cshtml";
     Page.Title = string.Format("Razor - {0}", "Exercise 01");
+
+    var myname = Request.Form["dataentry"];
+    var theButton = Request.Form["theButton"];
+    string choices = "";
 }
 
 @section banner {
     <h1>@Page.Title</h1>
 }
+
+<!-- determine if the page is a postback or not-->
+@if (IsPost)
+{
+    //this true path is done IF this page is returning
+    //from the previous sending
+
+    //IF you have multiple buttons on your form, you SHOULD
+    //determine which button was pressed; thus; dictating WHICH
+    //logic is to be EXECUTED
+    choices = Request.Form["MealItems"];
+    if (theButton.Equals("submit"))
+    {
+        //the Press Me button was pressed
+        if (string.IsNullOrEmpty(myname))
+        {
+            <p style="color:firebrick">You don't have a name?</p>
+        }
+        else
+        {
+            if (choices.IsEmpty())
+            {
+                <p style="color:firebrick">Are you not hungry?</p>
+                choices = "";
+            }
+            else
+            {
+                <p>
+                    @myname, I see that you have chosen the following meal entries:
+                    <ul>
+                        @foreach (var food in choices.Split(','))
+                        {
+                            <li>@food</li>
+                        }
+                    </ul>
+                </p>
+            }
+        }
+    }
+    else
+    {
+        myname = "";
+    }
+}
+
+
+
+        <form id="theform" method="post">
+            <div class="row">
+                <div class="offset-1">
+                    <label id="label1" for="dataentry">Customer Name:</label>&nbsp;&nbsp;
+                    <input type="text" id="dataentry" name="dataentry" value="@myname" />
+                    <br /><br />
+                </div>
+            </div>
+            <div class="row">
+                <div class="offset-1">
+                    <label id="lblMealItems">Choose Your Meal Items</label><br />
+                    <input type="checkbox" id="MealItems" name="MealItems" value="Steak"
+                           @*@(Array.IndexOf(choices.Split(','), "Steak") >= 0 ? "checked" : "")*@ />Steak<br />
+                    <input type="checkbox" id="MealItems" name="MealItems" value="Seafood"
+                           @*@(Array.IndexOf(choices.Split(','), "Seafood") >= 0 ? "checked" : "")*@ />Seafood<br />
+                    <input type="checkbox" id="MealItems" name="MealItems" value="Vegetables"
+                           @*@(Array.IndexOf(choices.Split(','), "Vegetables") >= 0 ? "checked" : "")*@ />Vegatables<br />
+                </div>
+            </div>
+            <div class="row">
+                <div class="offset-1">
+                    <button type="submit" id="theButton" name="theButton"
+                            value="submit" class="btn btn-primary">
+                        Submit
+                    </button>&nbsp;&nbsp;
+                    <button type="submit" id="theButton" name="theButton"
+                            value="reset" class="btn btn-light">
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </form>
