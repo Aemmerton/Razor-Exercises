@@ -1,4 +1,4 @@
-﻿@*// change this to be a drop down menu that is selectable and will direct to exercise c for album list of chosen artists in WebGrid Form. 
+﻿@*// change this to be a drop down menu that is selectable and will direct to exercise c for album list of chosen artists in WebGrid Form.
     Reference MultiRecordQuery, DropDownList, WebGridDisplay, WebGridDestination*@
 
 @{
@@ -61,21 +61,54 @@
     <h1>@Page.Title</h1>
 }
 
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Artist Name</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var row in results)
-        {
+@*<table>
+        <thead>
             <tr>
-                <td>@row.ArtistId</td>
-                <td>@row.Name</td>
+                <th>ID</th>
+                <th>Artist Name</th>
+                <th></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var row in results)
+            {
+                <tr>
+                    <td>@row.ArtistId</td>
+                    <td>@row.Name</td>
+                </tr>
+            }
+        </tbody>
+    </table>*@
+
+@if (IsPost)
+{
+    var choice = Request.Form["artistid"];
+
+    Response.Redirect("Exercise02_C.cshtml?cid=" + choice);
+
+}
+else
+{
+    <p style="color:firebrick">Make a selection.</p>
+}
+
+<form id="theform" method="post">
+    <div class="row">
+        <div class="offset-1">
+            <label id="artistid">Select from the list:</label>&nbsp;&nbsp;
+            <select id="artistid" name="artistid">
+                <option value="">select ...</option>
+
+                @foreach (var row in results)
+                {
+                    <option value="@row.ArtistId">@row.Name</option>
+
+                }
+            </select>&nbsp;&nbsp;
+            <button type="submit" id="theButton" name="theButton" value="submit"
+                    class="btn btn-primary">
+                Go To ...
+            </button>
+        </div>
+    </div>
+</form>
