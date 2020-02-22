@@ -1,80 +1,148 @@
 ﻿@*Make sure Validators catch errors before the user inputs try to put new data in database*@
 
 @{
-        Layout = "~/_Layout.cshtml";
-        Page.Title = string.Format("Razor - {0}", "Exercise 03");
+    Layout = "~/_Layout.cshtml";
+    Page.Title = string.Format("Razor - {0}", "Exercise 03");
 
-        var pid = Request.QueryString["pid"];
+    var pid = Request.QueryString["pid"];
 
-        string artistid = "";
+    string artistid = "";
 
-        var message = "";
-
-        //these are validator controls execute on the server side
-
-        Validation.Add("Title",
-             Validator.Required("Title is required"),
-             Validator.StringLength(160, 1, "Title name is limited to 160 characters"));
-
-        Validation.Add("Artist",
-             Validator.Required("Must choose an artist from the list"));
-
-        Validation.Add("Year",
-            Validator.Required("Album Year is required"),
-            Validator.Integer("Record year must be a number."),
-            Validator.Range(1950, 2020, "Record Year must be between 1950 and 2020"));
-
-        Validation.Add("Label",
-             Validator.StringLength(50, 1, "Label name is limited to 50 characters"));
+    var albumname = "";
+    var artistname = "";
+    var albumyear = "";
+    var albumlabel = "";
 
 
+    var message = "";
 
-        var db = Database.Open("CHINOOK");
-        var artistName = "SELECT Name "
-                            + "FROM Artists "
-                            + "ORDER BY Name";
-        var queryArtists = db.Query(artistName);
+    //these are validator controls execute on the server side
 
-    }
+    Validation.Add("Title",
+         Validator.Required("Title is required"),
+         Validator.StringLength(160, 1, "Title name is limited to 160 characters"));
 
-    @section banner {
+    Validation.Add("Artist",
+         Validator.Required("Must choose an artist from the list"));
+
+    Validation.Add("Year",
+        Validator.Required("Album Year is required"),
+        Validator.Integer("Record year must be a number."),
+        Validator.Range(1950, 2020, "Record Year must be between 1950 and 2020"));
+
+    Validation.Add("Label",
+         Validator.StringLength(50, 1, "Label name is limited to 50 characters"));
+
+
+
+    var db = Database.Open("CHINOOK");
+    var artistName = "SELECT Name "
+                        + "FROM Artists "
+                        + "ORDER BY Name";
+    var queryArtists = db.Query(artistName);
+
+}
+
+@section banner {
     <h1>@Page.Title</h1>
 }
 
-@*<form id="theform" method="post">
-    <div class="row">
-        <div class="offset-1">
-            <label id="lblartistArg" for="artistArg">Title:</label>&nbsp;&nbsp;
-            <input type="text" id="artistArg" name="artistArg"
-                   value="@artistarg" placeholder="partial artist name" />
-            <label id="artistid">Select from the list:</label>&nbsp;&nbsp;
-            <select id="artistid" name="artistid">
-                <option value="">select ...</option>
+@if (IsPost)
+{
+    // retreive the data from the form
+    albumname = Request.Form["Title"];
+    artistname = Request.Form["Artist"];
+    albumyear = Request.Form["Year"];
+    albumlabel = Request.Form["Label"];
 
-                @foreach (var row in results)
+
+    //when you have multiple buttons, a good practice is to determine
+    //    what action to do for the press button FIRST!
+    if (thebutton.Equals("Clear"))
+    {
+        //empty the form fields
+        albumname = "";
+        artistname = default;
+        albumyear = "";
+        albumlabel = "";
+    }
+    else
+    {
+        //Validation of data
+        //Validation.IsValid() is used to execute the server side validation
+        //the if statement DOES NOT need an else as the Validation control
+        //      message will appear in your Summary() or Message() controls
+        if (Validation.IsValid())
+        {
+            //you may have logical validation needed for your data that cannot
+            //be accomplished using Validation Controls or HTML5
+            //this type of validation is a programmed validation
+
+            //assume that the categoryid is a required field
+            var valid = true;
+            if (categoryid.Equals("0"))
+            {
+                valid = false;
+                <div class="col-12 text-center">
+                    <p style="color:darkslateblue">
+                        You must select a category
+                    </p>
+                </div>
+            }
+            //check validation result
+            if (valid)
+            {
+                //good data
+                try
                 {
-                    <option value="@row.ArtistId">@row.Name</option>
-
+                    //connect to the database
+                    //  done above
+                    //create sql command
+                    var inscommand = @"INSERT INTO Products (ProductName, SupplierID, CategoryID,
+    QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder,
+    ReorderLevel, Discontinued)
+    VALUES(@0, @1, @2, @3, @4, @5, @6, @7, 0)";
+                    //execute the command
+                    db.Execute(inscommand, productname,
+                        supplierid.Equals("0") ? null : supplierid,
+                        categoryid.Equals("0") ? null : categoryid,
+                        string.IsNullOrEmpty(quantityperunit) ? null : quantityperunit,
+                        string.IsNullOrEmpty(unitprice) ? null : unitprice,
+                        string.IsNullOrEmpty(unitsinstock) ? null : unitsinstock,
+                        string.IsNullOrEmpty(unitsonorder) ? null : unitsonorder,
+                        string.IsNullOrEmpty(reorderlevel) ? null : reorderlevel);
+                    <div class="col-12 text-center">
+                        <p style="color:green">
+                            Product has been added
+                        </p>
+                    </div>
                 }
-            </select>&nbsp;&nbsp;
-            <button type="submit" id="theButton" name="theButton" value="Add"
-                    class="btn btn-primary">
-                Add
-            </button>
-            <button type="reset" id="theButton" name="theButton" value="Clear"
-                    class="btn btn-primary">
-                Clear
-            </button>
-        </div>
-    </div>
-</form>*@
+                catch (Exception ex)
+                {
+                    <div class="col-12 text-center">
+                        <p style="color:firebrick; font-size:large">
+                            Processing error: @ex.Message
+                        </p>
+                    </div>
+                }
+            }
+
+        }
+
+    }
+
+}
+
+@Html.ValidationSummary()
+
 <form id="theForm" action="" method="post">
+
     <div class="row row-cols-2">
         <div class="col text-right">
             <label id="lblTitle" for="Title"><b>Title:</b></label>
         </div>
         <div class="col text-left">
-            <input type="text" name="Title" value=""/>
+            <input type="text" name="Title" value="" />
         </div><br />
         <div class="col text-right">
             <label id="lblArtist" for="Artist"><b>Artist:</b></label>
@@ -101,38 +169,14 @@
         <div class="col text-left">
             <input type="text" name="Label" value="" />
         </div><br />
-       
-    @*<div class="row">
-        <div class="col-12 text-center">
-            <button type="submit" name="theButton" id="theUpdate" class="btn btn-primary"
-                    value="update">
-                Update
-            </button>&nbsp;&nbsp;&nbsp;
-            <button type="submit" name="theButton" id="theDiscontinue" class="btn btn-primary" formnovalidate
-                    value="discontinue">
-                Discontinue
-            </button>&nbsp;&nbsp;&nbsp;
-            <button type="submit" name="theButton" id="theDelete" class="btn btn-primary" formnovalidate
-                    value="delete">
-                Delete Record
-            </button>&nbsp;&nbsp;&nbsp;
-            <button type="submit" name="theButton" id="theCancel" class="btn btn-primary" formnovalidate
-                    value="backtosearch">
-                Back to Search
-            </button>
-        </div>
-    </div>*@
 
-    @* confirmation can be done on a button click using javascript
-        we will ask the user to confirm the discontinuing of a product*@
-    @*<script type="text/javascript">
-        document.getElementById("theDiscontinue").onclick = ConfirmDiscontinue;
-        function ConfirmDiscontinue() {
-            return confirm("Are you sure you want to DISCONTINUE @productname?");
-        }
-        document.getElementById("theDelete").onclick = ConfirmDelete;
-        function ConfirmDelete() {
-            return confirm("Are you sure you want to DELETE @productname?");
-        }
-    </script>*@
+        <div class="row">
+            <div class="row row-cols-2">
+                <input type="submit" id="FormButton" name="FormButton"
+                       class="btn btn-primary" value="Add" />
+                <input type="submit" id="FormButton" name="FormButton" formnovalidate
+                       class="btn" value="Clear" />
+            </div>
+        </div>
+
 </form>
