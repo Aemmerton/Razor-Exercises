@@ -9,11 +9,11 @@
     string artistid = "";
 
     var albumname = "";
-    var artistname = "";
+    var artistname = "0";
     var albumyear = "";
     var albumlabel = "";
-
-
+    var thebutton = Request.Form["FormButton"];
+    var cid = Request.QueryString["cid"];
     var message = "";
 
     //these are validator controls execute on the server side
@@ -23,23 +23,24 @@
          Validator.StringLength(160, 1, "Title name is limited to 160 characters"));
 
     Validation.Add("Artist",
-         Validator.Required("Must choose an artist from the list"));
+         Validator.Required("You must choose an artist from the list"),
+         Validator.Range(1, 275, "You Must choose an artist from the list"));
+    
 
     Validation.Add("Year",
         Validator.Required("Album Year is required"),
-        Validator.Integer("Record year must be a number."),
-        Validator.Range(1950, 2020, "Record Year must be between 1950 and 2020"));
+        Validator.Integer("Album Year must be a number."),
+        Validator.Range(1950, 2020, "Album Year must be between 1950 and 2020"));
 
     Validation.Add("Label",
-         Validator.StringLength(50, 1, "Label name is limited to 50 characters"));
+         Validator.StringLength(50, 0, "Label name is limited to 50 characters"));
 
 
 
     var db = Database.Open("CHINOOK");
-    var artistName = "SELECT Name "
-                        + "FROM Artists "
-                        + "ORDER BY Name";
-    var queryArtists = db.Query(artistName);
+
+    var artistName = "SELECT ArtistId, Name FROM Artists";
+    var queryArtists = db.Query(artistName, cid);
 
 }
 
@@ -62,7 +63,7 @@
     {
         //empty the form fields
         albumname = "";
-        artistname = default;
+        artistname = "0";
         albumyear = "";
         albumlabel = "";
     }
@@ -80,12 +81,12 @@
 
             //assume that the categoryid is a required field
             var valid = true;
-            if (categoryid.Equals("0"))
+            if (artistname.Equals("0"))
             {
                 valid = false;
                 <div class="col-12 text-center">
                     <p style="color:darkslateblue">
-                        You must select a category
+                        You must select an Artist
                     </p>
                 </div>
             }
@@ -98,22 +99,17 @@
                     //connect to the database
                     //  done above
                     //create sql command
-                    var inscommand = @"INSERT INTO Products (ProductName, SupplierID, CategoryID,
-    QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder,
-    ReorderLevel, Discontinued)
-    VALUES(@0, @1, @2, @3, @4, @5, @6, @7, 0)";
+                    var inscommand = @"INSERT INTO Albums (Title, ArtistId, ReleaseYear,
+    ReleaseLabel)
+    VALUES(@0, @1, @2, @3)";
                     //execute the command
-                    db.Execute(inscommand, productname,
-                        supplierid.Equals("0") ? null : supplierid,
-                        categoryid.Equals("0") ? null : categoryid,
-                        string.IsNullOrEmpty(quantityperunit) ? null : quantityperunit,
-                        string.IsNullOrEmpty(unitprice) ? null : unitprice,
-                        string.IsNullOrEmpty(unitsinstock) ? null : unitsinstock,
-                        string.IsNullOrEmpty(unitsonorder) ? null : unitsonorder,
-                        string.IsNullOrEmpty(reorderlevel) ? null : reorderlevel);
+                    db.Execute(inscommand, albumname,
+                        artistname.Equals("0") ? null : artistname,
+                        string.IsNullOrEmpty(albumyear) ? null : albumyear,
+                        string.IsNullOrEmpty(albumlabel) ? null : albumlabel);
                     <div class="col-12 text-center">
                         <p style="color:green">
-                            Product has been added
+                            Album has been added
                         </p>
                     </div>
                 }
@@ -152,7 +148,7 @@
                 <option value="0">select...</option>
                 @foreach (var row in queryArtists)
                 {
-                    <option>@row.Name</option>
+                    <option value="@row.ArtistId">@row.Name</option>
 
                 }
             </select>
@@ -171,7 +167,7 @@
         </div><br />
 
         <div class="row">
-            <div class="row row-cols-2">
+            <div class="col text-right">
                 <input type="submit" id="FormButton" name="FormButton"
                        class="btn btn-primary" value="Add" />
                 <input type="submit" id="FormButton" name="FormButton" formnovalidate
