@@ -1,0 +1,103 @@
+﻿@*The Assessment will be covering Exercise 04*@
+
+@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = string.Format("Razor - {0}", "Exercise 04-A");
+    string artistid = "";
+    string artistname = "";
+
+    //input variables for web controls
+    var artistarg = Request.Form["artistArg"];
+    var thebutton = Request.Form["theButton"];
+
+}
+
+@section banner {
+    <h1>@Page.Title</h1>
+}
+
+@if (IsPost)
+{
+    if (thebutton.Equals("reset"))
+    {
+        artistarg = "";
+        artistid = "";
+    }
+    else  //user must have pressed the submit
+    {
+        //connect to the database
+        //use the name attribute off your web connection string
+
+        var db = Database.Open("CHINOOK");
+
+
+        //create the sql command to be executed on the database
+        //input parameters will be represented by the use of placeholders
+        //placeholders are indexes (0, 1, 2,...)
+        //your command can use multiple placeholders
+
+        //how to use the LIKE command in SQL
+        //WHERE Name LIKE 'a%'	Finds any values that start with "a"
+        //WHERE Name LIKE '%a'	Finds any values that end with "a"
+        //WHERE Name LIKE '%or%'	Finds any values that have "or" in any position
+        //WHERE Name LIKE '_r%'	Finds any values that have "r" in the second position
+        //WHERE Name LIKE 'a__%'	Finds any values that start with "a" and are at least 3 characters in length
+        //WHERE Name LIKE 'a%o'	Finds any values that start with "a" and ends with "o"
+
+        string artistquery = "SELECT AlbumId, Title FROM Albums WHERE Title LIKE @0 ORDER BY Title";
+        var partialstring = "%" + artistarg + "%";
+        var results = db.Query(artistquery, partialstring);
+        //always check if you even have results
+        if (string.IsNullOrEmpty(artistarg))
+        {
+            <p>You have not inputted an album name or partial album name. Please do so.</p>
+        }
+        else if (results.Count() == 0)
+        {
+            <p style="color:firebrick">There was no record returned from the Data Base</p>
+            artistarg = "";
+            artistid = "";
+        }
+        else
+        {
+            //yes products:
+            //pass ddl value (CategoryID) to next page
+            // to go to another page use Response.Redirect(pagename) (GET method)
+            // to pass data along with the page
+            // add a ? after the name
+            // add for each parameter a coded pair of    label = value
+            // separate data pairs with an  &
+            // sample syntax    Response.Redirect(page.ext?lbl=value[&lbl=value ...])
+            //WARNING: value are passed in plain text on Url
+            Response.Redirect("Exercise04_B.cshtml?cid=" + artistarg);
+
+        }
+    }
+}
+else
+{
+    <p style="color:darkblue">The Data Base has NOT been queried</p>
+    artistarg = "";
+}
+
+
+<form id="theform" method="post">
+    <div class="row">
+        <div class="col-3">
+            <div class="offset-1">
+                <label id="lblartistArg" for="artistArg">Enter a partial album name:</label>&nbsp;&nbsp;
+                <input type="text" id="artistArg" name="artistArg"
+                       value="@artistarg" placeholder="partial album name" />
+                <br /><br />
+                <button type="submit" id="theButton" name="theButton"
+                        value="submit" class="btn btn-primary">
+                    Fetch
+                </button>&nbsp;&nbsp;
+                <button type="submit" id="theButton" name="theButton"
+                        value="reset" class="btn btn-light">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
