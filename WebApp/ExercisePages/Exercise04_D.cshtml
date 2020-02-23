@@ -27,19 +27,18 @@
 
     Validation.Add("ReleaseYear",
         Validator.Required("You need to tell me what year it was heckin released!"),
-    Validator.Range(1950, 2020, "Unit price must be 0.00 or more"));
+    Validator.Range(1950, 2020, "Release year must be between 1950 and 2020"));
 
     Validation.Add("ReleaseLabel",
         Validator.StringLength(50, 0, "Max Label Name length 50 characters"));
 
     var db = Database.Open("CHINOOK");
 
-    var queryStatement = "SELECT Title, ArtistId, SupplierID, "
-                        + "CategoryID, QuantityPerUnit, UnitPrice, "
-                        + "UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued "
-                        + "FROM Products "
-                        + "WHERE Title = @0";
-    var queryAlbum = db.QuerySingle(queryStatement, cid);
+    var artistquery = @"SELECT AlbumId, Title, ArtistId, ReleaseYear, ReleaseLabel
+FROM Albums
+WHERE AlbumId = @0
+ORDER BY AlbumId";
+    var queryAlbum = db.QuerySingle(artistquery, cid);
 }
 
 
@@ -64,9 +63,9 @@
                 + "Title = @0, "
                 + "ArtistId = @1, "
                 + "ReleaseYear = @2, "
-                + "ReleaseLabel = @3, "
+                + "ReleaseLabel = @3 "
                 + "WHERE AlbumId = @4";
-                var rowsaffected = db.Execute(sqlcommand, title,
+                var rowsaffected = db.Execute(sqlcommand, albumid,
                 string.IsNullOrEmpty(title) ? null : title,
                 artistid.Equals("0") ? null : artistid,
                 string.IsNullOrEmpty(releaseyear) ? null : releaseyear,
@@ -82,21 +81,21 @@
             }
             else if (thebutton.Equals("delete"))
             {
-                var deleteStatement = "Delete Products WHERE AlbumId = @0";
+                var deleteStatement = "Delete Albums WHERE AlbumId = @0";
 
                 var rows = db.Execute(deleteStatement, title);
                 if (rows == 1)
                 {
-                    message = "Product has been DELETED";
+                    message = "Album has been DELETED";
                 }
                 else
                 {
-                    message = "Product NOT found";
+                    message = "Album NOT found";
                 }
                 title = "";
                 artistid = "";
-                releaseyear = "0";
-                releaselabel = "0";
+                releaseyear = "";
+                releaselabel = "";
             }
         }
 
@@ -110,6 +109,16 @@
         }
     }
 }
+else //IsPost=false
+{
+    if (message != "Album NOT found")
+    {
+        title = queryAlbum.Title;
+        artistid = queryAlbum.ArtistId == null ? "0" : queryAlbum.ArtistId.ToString();
+        releaseyear = queryAlbum.ReleaseYear == null ? "0" : queryAlbum.ReleaseYear.ToString();
+        releaselabel = queryAlbum.ReleaseLabel;
+    }
+}
 
 @Html.ValidationSummary()
 
@@ -121,25 +130,25 @@
 <form id="theForm" action="" method="post">
     <div class="row row-cols-2">
         <div class="col text-right">
-            <releaselabel id="lblProductID" for="Title">Title</releaselabel>
+            <releaselabel id="lblTitle" for="Title">Title</releaselabel>
         </div>
         <div class="col text-left">
             <input type="text" name="Title" value="@title" />
         </div><br />
         <div class="col text-right">
-            <releaselabel id="lblProductName" for="ArtistId">ArtistID</releaselabel>
+            <releaselabel id="lblArtistId" for="ArtistId">ArtistID</releaselabel>
         </div>
         <div class="col text-left">
             <input type="text" name="ArtistId" value="@artistid" />
         </div><br />
         <div class="col text-right">
-            <releaselabel id="lblSupplierList" for="ReleaseYear">Release Year</releaselabel>
+            <releaselabel id="lblReleaseYear" for="ReleaseYear">Release Year</releaselabel>
         </div>
         <div class="col text-left">
             <input type="text" name="ReleaseYear" value="@releaseyear" />
         </div><br />
         <div class="col text-right">
-            <releaselabel id="lblSupplierList" for="ReleaseLabel">Release Label</releaselabel>
+            <releaselabel id="lblReleaseLabel" for="ReleaseLabel">Release Label</releaselabel>
         </div>
         <div class="col text-left">
             <input type="text" name="ReleaseLabel" value="@releaselabel" />
@@ -168,7 +177,7 @@
     <script type="text/javascript">
         document.getElementById("theDelete").onclick = ConfirmDelete;
         function ConfirmDelete() {
-            return confirm("Are you sure you want to DELETE @albumid?");
+            return confirm("Are you sure you want to DELETE the album - @title?");
         }
     </script>
 </form>

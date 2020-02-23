@@ -6,11 +6,11 @@
 
     var pid = Request.QueryString["pid"];
 
-    string artistid = "";
+    int artistid; // changed to int
 
     var albumname = "";
     var artistname = "0";
-    var albumyear = "";
+    var albumyear = ""; // changed to int
     var albumlabel = "";
     var thebutton = Request.Form["FormButton"];
     var cid = Request.QueryString["cid"];
