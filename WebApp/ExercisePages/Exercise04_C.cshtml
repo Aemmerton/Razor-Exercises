@@ -37,20 +37,21 @@ ORDER BY AlbumId";
 
 
 @section banner {
-    <h1>WebGrid Display</h1>
+    <h1>@Page.Title</h1>
 }
 <div class="offset-1">
     <div class="col-11">
         @gridinstance.GetHtml(
-            tableStyle: "table table-striped table-bordered table-hover",
-            mode: WebGridPagerModes.All,
-            firstText: "Start",
-            lastText: "End",
-            columns: gridinstance.Columns(
-               gridinstance.Column(columnName: "Title", header: "Album Title"),
-               gridinstance.Column(columnName: "ArtistId", header: "ArtistID"),
-                gridinstance.Column(columnName: "ReleaseLabel", header: "Record Label"),
-               gridinstance.Column(columnName: "ReleaseYear", header: "Release Year")
-))
+         tableStyle: "table table-striped table-bordered table-hover",
+         mode: WebGridPagerModes.All,
+         firstText: "Start",
+         lastText: "End",
+         columns: gridinstance.Columns(
+            gridinstance.Column(columnName: "Title", header: "Album Title"),
+            gridinstance.Column(columnName: "ArtistId", header: "ArtistID"),
+            gridinstance.Column(columnName: "ReleaseLabel", header: "Record Label"),
+            gridinstance.Column(columnName: "ReleaseYear", header: "Release Year"),
+            grid.Column(header: "", format: @<text><a href="~/ExercisePages/Exercise04_D.cshtml?cid=@item.AlbumId">Edit</a></text>)
+));
     </div>
 </div>
