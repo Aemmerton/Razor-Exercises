@@ -7,11 +7,8 @@
     {
         Response.Redirect("~/ExercisePages/Exercise04_C.cshtml");
     }
-    var title = Request.Form["Title"];
-    var artistid = Request.Form["ArtistId"];
-    var releaseyear = Request.Form["ReleaseYear"];
-    var releaselabel = Request.Form["ReleaseLabel"];
-    var albumid = Request.Form["AlbumId"];
+
+    
     var thebutton = Request.Form["theButton"];
    
 
@@ -39,6 +36,11 @@ FROM Albums
 WHERE AlbumId = @0
 ORDER BY AlbumId";
     var queryAlbum = db.QuerySingle(artistquery, cid);
+    var albumid = queryAlbum.AlbumId;
+    var title = queryAlbum.Title;
+    var artistid = queryAlbum.ArtistId;
+    var releaseyear = queryAlbum.ReleaseYear;
+    var releaselabel = queryAlbum.ReleaseLabel;
 }
 
 
@@ -65,37 +67,39 @@ ORDER BY AlbumId";
                 + "ReleaseYear = @2, "
                 + "ReleaseLabel = @3 "
                 + "WHERE AlbumId = @4";
-                var rowsaffected = db.Execute(sqlcommand, albumid,
+                var rowsaffected = db.Execute(sqlcommand,
                 string.IsNullOrEmpty(title) ? null : title,
                 artistid.Equals("0") ? null : artistid,
-                string.IsNullOrEmpty(releaseyear) ? null : releaseyear,
-                string.IsNullOrEmpty(releaselabel) ? null : releaselabel);
+                releaseyear,
+                string.IsNullOrEmpty(releaselabel) ? null : releaselabel,
+                albumid);
                 if (rowsaffected > 0)
                 {
-                    message = "Product has been UPDATED";
+                    message = "Album has been UPDATED";
                 }
                 else
                 {
-                    message = "Product NOT found";
+                    message = "Album NOT found";
                 }
             }
             else if (thebutton.Equals("delete"))
             {
                 var deleteStatement = "Delete Albums WHERE AlbumId = @0";
 
-                var rows = db.Execute(deleteStatement, title);
+                var rows = db.Execute(deleteStatement, albumid);
                 if (rows == 1)
                 {
                     message = "Album has been DELETED";
+                    title = "";
+                    artistid = "";
+                    releaseyear = "";
+                    releaselabel = "";
                 }
                 else
                 {
                     message = "Album NOT found";
                 }
-                title = "";
-                artistid = "";
-                releaseyear = "";
-                releaselabel = "";
+
             }
         }
 
@@ -136,10 +140,10 @@ else //IsPost=false
             <input type="text" name="Title" value="@title" />
         </div><br />
         <div class="col text-right">
-            <releaselabel id="lblArtistId" for="ArtistId">ArtistID</releaselabel>
+            <releaselabel id="lblArtistId" for="ArtistId" >ArtistID</releaselabel>
         </div>
         <div class="col text-left">
-            <input type="text" name="ArtistId" value="@artistid" />
+            <input type="text" name="ArtistId" value="@artistid" readonly/>
         </div><br />
         <div class="col text-right">
             <releaselabel id="lblReleaseYear" for="ReleaseYear">Release Year</releaselabel>
